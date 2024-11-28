@@ -2,7 +2,7 @@
 """
 TP_1
 
-@author: AHIDOTE Miguel SIRI
+@author: SINAGAOUE Chérif SI
 """
 import urllib.request
 import pandas as pd
