@@ -6,14 +6,25 @@ import seaborn as sns
 # Titre de l'application
 st.title("Analyse des données Iris")
 
-# Charger les données directement depuis le fichier dans le dossier de travail
-df = pd.read_csv("Iris.csv")
+# Charger les données
+try:
+    df = pd.read_csv("Iris.csv")
+except FileNotFoundError:
+    st.error("Le fichier Iris.csv est introuvable. Assurez-vous qu'il est présent dans le dossier de travail.")
+    st.stop()
+
+# Vérification de colonnes numériques
+numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+
+if numeric_columns.empty:
+    st.error("Aucune colonne numérique disponible dans le fichier.")
+    st.stop()
 
 # Aperçu des données
 st.subheader("Aperçu des données")
 st.dataframe(df)
 
-# Ajouter une méthode pour afficher les données
+# Affichage des lignes personnalisées
 st.subheader("Affichage personnalisé des données")
 rows_to_display = st.slider(
     "Nombre de lignes à afficher :", 
@@ -21,26 +32,37 @@ rows_to_display = st.slider(
 )
 st.write(df.head(rows_to_display))
 
-# Options de visualisation
+# Statistiques descriptives
 st.subheader("Statistiques descriptives")
 st.write(df.describe())
 
-# Sélectionner les colonnes pour la visualisation
-st.subheader("Visualisations")
-columns = df.columns
-x_axis = st.selectbox("Sélectionnez la colonne pour l'axe X", options=columns)
-y_axis = st.selectbox("Sélectionnez la colonne pour l'axe Y", options=columns)
+# Sélection des colonnes pour visualisation
+st.subheader("Visualisations interactives")
+x_axis = st.selectbox("Sélectionnez la colonne pour l'axe X", options=numeric_columns, key="scatter_x")
+y_axis = st.selectbox("Sélectionnez la colonne pour l'axe Y", options=numeric_columns, key="scatter_y")
 
-# Création du graphique interactif
+# Création d'un graphique interactif
 st.subheader("Graphique interactif")
 fig, ax = plt.subplots()
 sns.scatterplot(data=df, x=x_axis, y=y_axis, ax=ax)
 ax.set_title(f"Graphique de {x_axis} vs {y_axis}")
 st.pyplot(fig)
 
-# Visualisation avec Seaborn : Matrice de corrélation
+# Histogramme
+st.subheader("Histogramme")
+hist_column = st.selectbox("Sélectionnez une colonne pour l'histogramme", options=numeric_columns, key="hist_column")
+fig_hist, ax_hist = plt.subplots()
+sns.histplot(df[hist_column].dropna(), bins=20, kde=True, ax=ax_hist)
+ax_hist.set_title(f"Histogramme de {hist_column}")
+st.pyplot(fig_hist)
+
+# Matrice de corrélation
 st.subheader("Matrice de corrélation")
-fig_corr, ax_corr = plt.subplots(figsize=(8, 6))
-sns.heatmap(df.corr(), annot=True, cmap="coolwarm", ax=ax_corr)
-ax_corr.set_title("Matrice de corrélation")
-st.pyplot(fig_corr)
+corr_data = df[numeric_columns].corr()  # Utiliser uniquement les colonnes numériques
+if not corr_data.empty:
+    fig_corr, ax_corr = plt.subplots(figsize=(10, 8))
+    sns.heatmap(corr_data, annot=True, cmap="coolwarm", fmt=".2f", ax=ax_corr)
+    ax_corr.set_title("Matrice de corrélation")
+    st.pyplot(fig_corr)
+else:
+    st.error("Aucune corrélation ne peut être calculée (colonnes numériques manquantes).")
