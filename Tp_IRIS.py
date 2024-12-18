@@ -48,10 +48,12 @@ sns.scatterplot(data=df, x=x_axis, y=y_axis, ax=ax)
 ax.set_title(f"Graphique de {x_axis} vs {y_axis}")
 st.pyplot(fig)
 
-# Histogramme
+# Histogramme avec une taille réduite
 st.subheader("Histogramme")
 hist_column = st.selectbox("Sélectionnez une colonne pour l'histogramme", options=numeric_columns, key="hist_column")
-fig_hist, ax_hist = plt.subplots()
+
+# Taille de l'histogramme plus petite
+fig_hist, ax_hist = plt.subplots(figsize=(6, 4))  # Modifier la taille ici
 sns.histplot(df[hist_column].dropna(), bins=20, kde=True, ax=ax_hist)
 ax_hist.set_title(f"Histogramme de {hist_column}")
 st.pyplot(fig_hist)
